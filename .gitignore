@@ -1,0 +1,9 @@
+out/
+target/
+.idea*
+.bsp*
+*.iml
+.bloop/
+.metals/
+.vscode/
+*~
