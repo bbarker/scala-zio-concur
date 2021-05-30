@@ -2,28 +2,32 @@ import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-inThisBuild(List(
-  crossScalaVersions := Seq("3.0.0"),
-  scalaVersion := crossScalaVersions.value.head,
-  scalacOptions := Seq(
-    "-deprecation",
-    "-encoding", "UTF-8",
-    "-feature",
-    "-unchecked",
-    "-Xfatal-warnings", // see Cancelable#cancel
+inThisBuild(
+  List(
+    crossScalaVersions := Seq("3.0.0"),
+    scalaVersion := crossScalaVersions.value.head,
+    scalacOptions := Seq(
+      "-deprecation",
+      "-encoding",
+      "UTF-8",
+      "-feature",
+      "-unchecked",
+      "-Xfatal-warnings", // see Cancelable#cancel
+    ),
+    organization := "in.nvilla",
+    scalaJSLinkerConfig ~= { _.withSourceMap(true) },
+    licenses := Seq(("MIT", url("http://opensource.org/licenses/MPL-2.0"))),
+    homepage := Some(url("https://github.com/bbarker/scala-zio-concur")),
+    developers := List(
+      Developer(
+        "bbarker",
+        "Brandon Barker",
+        "brandon.barker@gmail.com",
+        url("https://github.com/bbarker/"),
+      ),
+    ),
   ),
-  organization := "in.nvilla",
-  scalaJSLinkerConfig ~= { _.withSourceMap(true) },
-  licenses := Seq(("MIT", url("http://opensource.org/licenses/MPL-2.0"))),
-  homepage := Some(url("https://github.com/bbarker/scala-zio-concur")),
-  developers := List(
-    Developer(
-      "bbarker",
-      "Brandon Barker",
-      "brandon.barker@gmail.com",
-      url("https://github.com/bbarker/")
-    )
-  )))
+)
 
 val scalajsdom = "1.1.0"
 
@@ -40,12 +44,11 @@ publish / skip := true
 
 lazy val `concurJS`  = `concur`.js
 lazy val `concurJVM` = `concur`.jvm
-lazy val `concur`    = crossProject(JSPlatform, JVMPlatform)
+lazy val `concur` = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Full)
   .jvmSettings(publish / skip := true)
   .jsSettings(testSettings)
-  .settings(
-    libraryDependencies += "dev.zio" %%% "zio" % "1.0.8")
+  .settings(libraryDependencies += "dev.zio" %%% "zio" % "1.0.8")
 
 //lazy val `concur-catsJS`  = `concur-cats`.js
 //lazy val `concur-catsJVM` = `concur-cats`.jvm
@@ -68,7 +71,7 @@ lazy val `examples` = project
     // libraryDependencies += "com.github.japgolly.scalacss" %%% "core" % "0.6.1"
   )
 
-
 lazy val testSettings = Seq(
   // Test / testOptions   += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
-  Test / jsEnv     := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv())
+  Test / jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
+)
