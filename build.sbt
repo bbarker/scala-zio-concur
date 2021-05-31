@@ -7,12 +7,17 @@ inThisBuild(
     crossScalaVersions := Seq("3.0.0"),
     scalaVersion := crossScalaVersions.value.head,
     scalacOptions := Seq(
-      "-deprecation",
+      "-deprecation", // Emit warning and location for usages of deprecated APIs.
       "-encoding",
-      "UTF-8",
+      "utf-8", // Specify character encoding used by source files.
       "-feature",
       "-unchecked",
-      "-Xfatal-warnings", // see Cancelable#cancel
+      "-Xfatal-warnings", // Fail on warnings, not just errors
+      "-source:future",   // Choices: future and future-migration. I use this to force future deprecation warnings, etc.
+      "-new-syntax",      // Require `then` and `do` in control expressions.
+      // "-language:strictEquality",          // Require +derives Eql+ for using == or != comparisons
+      // "-rewrite",                          // Attempt to fix code automatically. Use with -indent and ...-migration.
+      // "-scalajs",                          // Compile in Scala.js mode (requires scalajs-library.jar on the classpath).
     ),
     organization := "in.nvilla",
     scalaJSLinkerConfig ~= { _.withSourceMap(true) },
