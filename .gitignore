@@ -7,3 +7,4 @@ target/
 .metals/
 .vscode/
 *~
+nohup.out
