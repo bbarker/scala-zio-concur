@@ -11,15 +11,15 @@ object Types:
    * TODO: Have a way to check if the callback is finished (i.e. will never be called again)
    * one option is to have a cb = (Either partResult a -> Effect Unit)
    */
-  type Callback[+V, +E,  E1 >: E, +A] = (Result[V, E, E1, A] => IO[E1, Unit]) => IO[E, WidgetHandle[V, E, E1, A]]
+  type Callback[V, E, A] = (Result[V, E, A] => IO[E, Unit]) => IO[E, WidgetHandle[V, E, A]]
   object Callback:
     // TODO: I think I need to unpack this in purescript:
     // mapCallback :: forall v a b. (a -> b) -> Callback v a -> Callback v b
     // mapCallback f g = \cb -> map f <$> g (cb <<< map f)
-    def map[V, E, E1 >: E, A, B](fn: A => B)(cb: Callback[V,E,E1,A]): Callback[V,E,E1,B] = resRunB => {
+    def map[V, E, E1 >: E, A, B](fn: A => B)(cb: Callback[V,E,A]): Callback[V,E,B] = resRunB => {
       // val resRunB0: ResultRun[V, E, E1, B] = resRunB
-      val resRunA = Result.map[V,E,E1,A,B](fn).andThen(resRunB)
-      val cbRunA: IO[E, WidgetHandle[V, E, E1, A]] = cb(resRunA)
+      val resRunA = Result.map[V,E, E1, A,B](fn).andThen(resRunB)
+      val cbRunA: IO[E, WidgetHandle[V, E, A]] = cb(resRunA)
       cbRunA.map(wh => WidgetHandle.map(fn)(wh))
 
     }
@@ -28,8 +28,8 @@ object Types:
 
 
   object WidgetHandle:
-    opaque type WidgetHandle[+V,+E, E1 >: E,+A] = IO[E, Callback[V, E, E1, A]]
-    def map[V,E,E1 >: E,A,B](fn: A => B)(wh: WidgetHandle[V,E,E1,A]): WidgetHandle[V,E,E1,B] 
+    opaque type WidgetHandle[+V,+E,+A] = IO[E, Callback[V, E, A]]
+    def map[V,E,A,B](fn: A => B)(wh: WidgetHandle[V,E,A]): WidgetHandle[V,E,B] 
       = wh.map(cb => Callback.map(fn)(cb))
 
   /**
@@ -43,27 +43,28 @@ object Types:
   /**
    * A Widget is basically a callback that returns a view or a return value
    */
-  enum Result[+V, +E, E1 >: E, +A]:
+  enum Result[+V, +E, +A]:
     case View(view: V)
     case Eff(eff: IO[E, Unit])
-    case Res(result: A, remaining: Unit => ZipList[RemainingWidget[V,E,E1,A]])
+    case Res[V, E, A](result: A, remaining: Unit => ZipList[RemainingWidget[V,E,A]]) extends Result[V,E,A]
   object Result:
-    def map[V,E, E1 >: E,A,B](fn: A => B)(res: Result[V,E,E1,A]): Result[V,E,E1,B] = res match
+    def map[V,E, E1 >: E, A,B](fn: A => B)(res: Result[V,E,A]): Result[V,E,B] = res match
       case View(v) => View(v)
       case Eff(e) => Eff(e)
-      case Res(res, rem) => Res(fn(res), _ => ZipList.map(RemainingWidget.map[V,E,E1,A,B](fn))(rem(())) )
+      case Res(res, rem) => Res(fn(res), _ => ZipList.map(RemainingWidget.map[V,E,A,B](fn))(rem(())) )
+
   
 //  -- | A stopped Widget which is not populated, or a handle to an already running and populated widget
 //    data RemainingWidget v a = RunningWidget (WidgetHandle v a) | StoppedWidget (Widget v a)
 //  derive instance functorRemainingWidget :: Functor (RemainingWidget v)
-  enum RemainingWidget[+V,+E,E1 >: E,+A]:
-    case RunningWidget(wh: WidgetHandle[V,E,E1,A])
-    case StoppedWidget(sw: Widget[V,E,E1,A])
+  enum RemainingWidget[+V,+E,+A]:
+    case RunningWidget(wh: WidgetHandle[V,E,A])
+    case StoppedWidget(sw: Widget[V,E,A])
   object RemainingWidget:
-    def map[V,E,E1 >: E,A,B](fn: A => B)(rw: RemainingWidget[V,E,E1,A]): RemainingWidget[V,E,E1,B] = ??? // rw match
+    def map[V,E,A,B](fn: A => B)(rw: RemainingWidget[V,E,A]): RemainingWidget[V,E,B] = ??? // rw match
       // case RunningWidget(wh) => ??? // TODO: functor for WidgetHandle m
 
   object Widget:
-    opaque type Widget[+V, +E,  E1 >: E, +A] = Callback[V,E,E1,A]
+    opaque type Widget[+V, +E, +A] = Callback[V,E,A]
 
 
