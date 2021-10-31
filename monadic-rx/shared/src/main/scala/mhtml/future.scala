@@ -6,6 +6,7 @@ import scala.util.Try
 import mhtml.{Rx, Var}
 
 object Utils {
+
   /** Convert a `Future` to a `Rx` */
   def futureToRx[T](f: Future[T])(implicit ec: ExecutionContext): Rx[Option[Try[T]]] = {
     val result: Var[Option[Try[T]]] = Var(None)
@@ -20,5 +21,3 @@ object syntax {
       Utils.futureToRx(f)
   }
 }
-
-

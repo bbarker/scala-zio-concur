@@ -2,6 +2,7 @@ import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 
 Global / semanticdbEnabled := true
 Global / onChangedBuildSource := ReloadOnSourceChanges
+Global / resolvers += Resolver.sonatypeRepo("snapshots")
 
 inThisBuild(List(
   crossScalaVersions := Seq("3.1.0"),
@@ -31,6 +32,8 @@ inThisBuild(List(
 
 val scalajsdom = "2.0.0"
 val cats       = "2.6.1"
+val zio = "2.0.0-M4"
+val zioPrelude = "1.0.0-RC7+11-3a2eb33a-SNAPSHOT"
 
 publish / skip := true
 
@@ -51,6 +54,8 @@ lazy val `monadic-rx`    = crossProject(JSPlatform, JVMPlatform)
   .jvmSettings(publish / skip := true)
   .jsSettings(testSettings)
   .settings(
+        libraryDependencies += "dev.zio" %%% "zio" % zio,
+    libraryDependencies += "dev.zio" %%% "zio-prelude" % zioPrelude,
     /*libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % Test*/)
 
 lazy val `monadic-rx-catsJS`  = `monadic-rx-cats`.js

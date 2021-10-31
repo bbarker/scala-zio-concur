@@ -2,6 +2,7 @@ import scala.xml.Node
 import org.scalajs.dom.html.Element
 
 package object mhtml {
+
   /** To be used has a `mhtml-onmount` handler to set raw HTML using `.innerHTML`. */
   def setUnsafeRawHTML(a: String)(n: Element): Unit = n.innerHTML = a
 

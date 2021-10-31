@@ -11,8 +11,8 @@ import scala.annotation.implicitNotFound
 
 /** Trait representing XML tree. */
 sealed trait Node {
-  def scope: Option[Scope] = None
-  def prefix: Option[String] = None
+  def scope: Option[Scope]      = None
+  def prefix: Option[String]    = None
   def namespace: Option[String] = scope.flatMap(_.namespaceURI(prefix.orNull))
 }
 
@@ -21,15 +21,14 @@ final case class Group(nodes: Seq[Node]) extends Node
 
 /** XML element. */
 final case class Elem(
-  override val prefix: Option[String],
-  label: String,
-  attributes1: MetaData,
-  override val scope: Option[Scope],
-  minimizeEmpty: Boolean,
-  child: Node*
+    override val prefix: Option[String],
+    label: String,
+    attributes1: MetaData,
+    override val scope: Option[Scope],
+    minimizeEmpty: Boolean,
+    child: Node*,
 ) extends Node {
-  def this(p: String, l: String, a: MetaData, s: Scope, m: Boolean, c: Node*) =
-    this(Option(p), l, Elem.merge(a, s), Some(s), m, c: _*)
+  def this(p: String, l: String, a: MetaData, s: Scope, m: Boolean, c: Node*) = this(Option(p), l, Elem.merge(a, s), Some(s), m, c: _*)
 }
 object Elem {
   // Merges attributes stored in as scope with other metadata
@@ -57,7 +56,7 @@ class Atom[+A](val data: A) extends Node
 // Scopes ---------------------------------------------------------------------
 
 sealed trait Scope {
-  def namespaceURI(prefix: String) : Option[String]
+  def namespaceURI(prefix: String): Option[String]
 }
 
 // Used by scalac for xmlns prefixed attributes
@@ -68,7 +67,7 @@ class NamespaceBinding(key: String, url: String, next: NamespaceBinding) extends
   def _2      = url
   def _3      = next
 
-  def namespaceURI(prefix: String) : Option[String] =
+  def namespaceURI(prefix: String): Option[String] =
     if (prefix == key) Some(url) else next namespaceURI prefix
 }
 
@@ -86,15 +85,13 @@ final case object TopScope extends NamespaceBinding(null, null, null) {
 // Unprefixed}Attribute was removed. Iterable[MetaData] <: Metadata still holds,
 // but this should never be user facing.
 
-/**
- * This class represents an attribute and at the same time a linked list of
- *  attributes. Every instance of this class is either
- *  - an instance of `UnprefixedAttribute key,value` or
- *  - an instance of `PrefixedAttribute namespace_prefix,key,value` or
- *  - `Null`, the empty attribute list.
- */
+/** This class represents an attribute and at the same time a linked list of attributes. Every instance of this class is either
+  *   - an instance of `UnprefixedAttribute key,value` or
+  *   - an instance of `PrefixedAttribute namespace_prefix,key,value` or
+  *   - `Null`, the empty attribute list.
+  */
 sealed trait MetaData {
-  def hasNext = (Null != next)
+  def hasNext = Null != next
   def key: String
   def value: Node
   def next: MetaData
@@ -109,31 +106,32 @@ sealed trait MetaData {
 }
 
 case object Null extends MetaData {
-  def next = null
-  def key = null
+  def next  = null
+  def key   = null
   def value = null
 }
 
 final case class PrefixedAttribute[T: XmlAttributeEmbeddable](
-  pre: String,
-  key: String,
-  e: T,
-  next: MetaData
-)(implicit ev: XmlAttributeEmbeddable[T]) extends MetaData {
+    pre: String,
+    key: String,
+    e: T,
+    next: MetaData,
+)(implicit ev: XmlAttributeEmbeddable[T])
+    extends MetaData {
   val value: Node = e match { case n: Node => n; case _ => new Atom(e) }
 }
 
 final case class UnprefixedAttribute[T](
-  key: String,
-  e: T,
-  next: MetaData
-)(implicit ev: XmlAttributeEmbeddable[T]) extends MetaData {
+    key: String,
+    e: T,
+    next: MetaData,
+)(implicit ev: XmlAttributeEmbeddable[T])
+    extends MetaData {
   val value: Node = e match { case n: Node => n; case _ => new Atom(e) }
 }
 
 /** Evidence that T can be embedded in xml attribute position. */
-@implicitNotFound(msg =
-    """Cannot embed value of type ${T} in xml attribute, implicit XmlAttributeEmbeddable[${T}] not found.
+@implicitNotFound(msg = """Cannot embed value of type ${T} in xml attribute, implicit XmlAttributeEmbeddable[${T}] not found.
 The following types are supported:
 - String
 - Boolean (false → remove attribute, true → empty attribute)
@@ -144,19 +142,18 @@ The following types are supported:
 trait XmlAttributeEmbeddable[T]
 object XmlAttributeEmbeddable {
   type XA[T] = XmlAttributeEmbeddable[T]
-  @inline implicit def noneAttributeEmbeddable:                             XA[None.type]    = null
-  @inline implicit def booleanAttributeEmbeddable:                          XA[Boolean]      = null
-  @inline implicit def stringAttributeEmbeddable:                           XA[String]       = null
-  @inline implicit def textNodeAttributeEmbeddable:                         XA[Text]         = null
-  @inline implicit def function0AttributeEmbeddable:                        XA[() => Unit]   = null
-  @inline implicit def function1AttributeEmbeddable[T]:                     XA[T => Unit]    = null
-  @inline implicit def optionAttributeEmbeddable[C[x] <: Option[x], T: XA]: XA[C[T]]         = null
-  @inline implicit def rxAttributeEmbeddable[C[x] <: mhtml.Rx[x], T: XA]:   XA[C[T]]         = null
+  @inline implicit def noneAttributeEmbeddable: XA[None.type]                        = null
+  @inline implicit def booleanAttributeEmbeddable: XA[Boolean]                       = null
+  @inline implicit def stringAttributeEmbeddable: XA[String]                         = null
+  @inline implicit def textNodeAttributeEmbeddable: XA[Text]                         = null
+  @inline implicit def function0AttributeEmbeddable: XA[() => Unit]                  = null
+  @inline implicit def function1AttributeEmbeddable[T]: XA[T => Unit]                = null
+  @inline implicit def optionAttributeEmbeddable[C[x] <: Option[x], T: XA]: XA[C[T]] = null
+  @inline implicit def rxAttributeEmbeddable[C[x] <: mhtml.Rx[x], T: XA]: XA[C[T]]   = null
 }
 
 /** Evidence that T can be embedded in xml element position. */
-@implicitNotFound(msg =
-    """Cannot embed value of type ${T} in xml element, implicit XmlElementEmbeddable[${T}] not found.
+@implicitNotFound(msg = """Cannot embed value of type ${T} in xml element, implicit XmlElementEmbeddable[${T}] not found.
 The following types are supported:
 - String, Int, Long, Double, Float, Char (converted with .toString)
 - xml.Node, Seq[xml.Node]
@@ -167,18 +164,18 @@ trait XmlElementEmbeddable[T]
 object XmlElementEmbeddable {
   type XE[T] = XmlElementEmbeddable[T]
 
-  @inline implicit def nilElementEmbeddable:                              XE[Nil.type]  = null
-  @inline implicit def noneElementEmbeddable:                             XE[None.type] = null
-  @inline implicit def intElementEmbeddable:                              XE[Int]       = null
-  @inline implicit def floatElementEmbeddable:                            XE[Float]     = null
-  @inline implicit def doubleElementEmbeddable:                           XE[Double]    = null
-  @inline implicit def longElementEmbeddable:                             XE[Long]      = null
-  @inline implicit def charElementEmbeddable:                             XE[Char]      = null
-  @inline implicit def stringElementEmbeddable:                           XE[String]    = null
-  @inline implicit def nodeElementEmbeddable[T <: Node]:                  XE[T]         = null
-  @inline implicit def optionElementEmbeddable[C[x] <: Option[x], T: XE]: XE[C[T]]      = null
-  @inline implicit def seqElementEmbeddable[C[x] <: Seq[x], T <: Node]:   XE[C[T]]      = null
-  @inline implicit def rxElementEmbeddable[C[x] <: mhtml.Rx[x], T: XE]:   XE[C[T]]      = null
+  @inline implicit def nilElementEmbeddable: XE[Nil.type]                          = null
+  @inline implicit def noneElementEmbeddable: XE[None.type]                        = null
+  @inline implicit def intElementEmbeddable: XE[Int]                               = null
+  @inline implicit def floatElementEmbeddable: XE[Float]                           = null
+  @inline implicit def doubleElementEmbeddable: XE[Double]                         = null
+  @inline implicit def longElementEmbeddable: XE[Long]                             = null
+  @inline implicit def charElementEmbeddable: XE[Char]                             = null
+  @inline implicit def stringElementEmbeddable: XE[String]                         = null
+  @inline implicit def nodeElementEmbeddable[T <: Node]: XE[T]                     = null
+  @inline implicit def optionElementEmbeddable[C[x] <: Option[x], T: XE]: XE[C[T]] = null
+  @inline implicit def seqElementEmbeddable[C[x] <: Seq[x], T <: Node]: XE[C[T]]   = null
+  @inline implicit def rxElementEmbeddable[C[x] <: mhtml.Rx[x], T: XE]: XE[C[T]]   = null
 }
 
 @implicitNotFound("""EntityRef are not supported, use Strings instead: <p>{"<"}</p>""")
@@ -187,10 +184,10 @@ trait XmlEntityRefEmbeddable
 /** Internal structure used by scalac to create literals */
 class NodeBuffer extends Seq[Node] {
   private val underlying: mutable.ArrayBuffer[Node] = mutable.ArrayBuffer.empty
-  def iterator: Iterator[Node] = underlying.iterator
-  def apply(i: Int): Node = underlying.apply(i)
-  def length: Int = underlying.length
-  override def toString: String = underlying.toString
+  def iterator: Iterator[Node]                      = underlying.iterator
+  def apply(i: Int): Node                           = underlying.apply(i)
+  def length: Int                                   = underlying.length
+  override def toString: String                     = underlying.toString
 
   def &+(e: Node): NodeBuffer = { underlying.+=(e); this }
   def &+[A: XmlElementEmbeddable](e: A): NodeBuffer = { underlying.+=(new Atom(e)); this }
