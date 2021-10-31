@@ -1,82 +1,79 @@
 import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 
+Global / semanticdbEnabled := true
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-inThisBuild(
-  List(
-    crossScalaVersions := Seq("3.0.0"),
-    scalaVersion := crossScalaVersions.value.head,
-    scalacOptions := Seq(
-      "-deprecation", // Emit warning and location for usages of deprecated APIs.
-      "-encoding",
-      "utf-8", // Specify character encoding used by source files.
-      "-feature",
-      "-unchecked",
-      "-Xfatal-warnings", // Fail on warnings, not just errors
-      "-source:future",   // Choices: future and future-migration. I use this to force future deprecation warnings, etc.
-      "-new-syntax",      // Require `then` and `do` in control expressions.
-      // "-language:strictEquality",          // Require +derives Eql+ for using == or != comparisons
-      // "-rewrite",                          // Attempt to fix code automatically. Use with -indent and ...-migration.
-      // "-scalajs",                          // Compile in Scala.js mode (requires scalajs-library.jar on the classpath).
-    ),
-    organization := "in.nvilla",
-    scalaJSLinkerConfig ~= { _.withSourceMap(true) },
-    licenses := Seq(("MIT", url("http://opensource.org/licenses/MPL-2.0"))),
-    homepage := Some(url("https://github.com/bbarker/scala-zio-concur")),
-    developers := List(
-      Developer(
-        "bbarker",
-        "Brandon Barker",
-        "brandon.barker@gmail.com",
-        url("https://github.com/bbarker/"),
-      ),
-    ),
-  ),
-)
+inThisBuild(List(
+  crossScalaVersions := Seq("3.1.0"),
+  scalaVersion := crossScalaVersions.value.head,
+  scalacOptions := Seq(
+    "-deprecation",
+    "-encoding", "UTF-8",
+    "-feature",
+    "-unchecked",
+    // "-Xfatal-warnings", see Cancelable#cancel
+    "-Xlint:-unused,_",
+    "-language:higherKinds",
+    "-Ywarn-numeric-widen",
+    "-Ywarn-value-discard"),
+  organization := "in.nvilla",
+  scalaJSLinkerConfig ~= { _.withSourceMap(true) },
+  licenses := Seq(("MIT", url("http://opensource.org/licenses/MIT"))),
+  homepage := Some(url("https://github.com/OlivierBlanvillain/monadic-html")),
+  developers := List(
+    Developer(
+    "OlivierBlanvillain",
+    "Olivier Blanvillain",
+    "noreply@github.com",
+    url("https://github.com/OlivierBlanvillain/")
+  )
+)))
 
-val scalajsdom = "1.1.0"
+val scalajsdom = "2.0.0"
+val cats       = "2.6.1"
 
 publish / skip := true
 
-//lazy val `monadic-html` = project
-//  .enablePlugins(ScalaJSPlugin)
-//  .dependsOn(
-//    `concurJS`,
-//    `concur-catsJS` % "test->compile")
-//  .settings(
-//    testSettings,
-//    libraryDependencies += "org.scala-js"  %%% "scalajs-dom" % scalajsdom,
+lazy val `monadic-html` = project
+  .enablePlugins(ScalaJSPlugin)
+  .dependsOn(
+    `monadic-rxJS`,
+    `monadic-rx-catsJS` % "test->compile")
+  .settings(
+    testSettings,
+    libraryDependencies += "org.scala-js"  %%% "scalajs-dom" % scalajsdom,
+    /*libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % Test*/)
 
-lazy val `concurJS`  = `concur`.js
-lazy val `concurJVM` = `concur`.jvm
-lazy val `concur` = crossProject(JSPlatform, JVMPlatform)
+lazy val `monadic-rxJS`  = `monadic-rx`.js
+lazy val `monadic-rxJVM` = `monadic-rx`.jvm
+lazy val `monadic-rx`    = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Full)
   .jvmSettings(publish / skip := true)
   .jsSettings(testSettings)
-  .settings(libraryDependencies += "dev.zio" %%% "zio" % "1.0.8")
+  .settings(
+    /*libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % Test*/)
 
-//lazy val `concur-catsJS`  = `concur-cats`.js
-//lazy val `concur-catsJVM` = `concur-cats`.jvm
-//lazy val `concur-cats`    = crossProject(JSPlatform, JVMPlatform)
-//  .crossType(CrossType.Pure)
-//  .jvmSettings(skip in publish := true)
-//  .dependsOn(`concur`)
-//  .settings(
-//    testSettings,
-//    libraryDependencies += "org.typelevel" %%% "cats-concur" % cats)
+lazy val `monadic-rx-catsJS`  = `monadic-rx-cats`.js
+lazy val `monadic-rx-catsJVM` = `monadic-rx-cats`.jvm
+lazy val `monadic-rx-cats`    = crossProject(JSPlatform, JVMPlatform)
+  .crossType(CrossType.Pure)
+  .jvmSettings(publish / skip := true)
+  .dependsOn(`monadic-rx`)
+  .settings(
+    testSettings,
+    libraryDependencies += "org.typelevel" %%% "cats-core" % cats)
 
+/* // examples disabled for now as scalacss isn't supported, can probably remove it
 lazy val `examples` = project
   .enablePlugins(ScalaJSPlugin)
-  .dependsOn(`concurJS`)
-  //.dependsOn(/*`monadic-html`, `concur-catsJS`*/)
+  .dependsOn(`monadic-html`, `monadic-rx-catsJS`)
   .settings(
     testSettings,
     publish / skip := true,
     Test / test := {},
-    // libraryDependencies += "com.github.japgolly.scalacss" %%% "core" % "0.6.1"
-  )
+    libraryDependencies += "com.github.japgolly.scalacss" %%% "core" % "0.7.0")
+*/
 
 lazy val testSettings = Seq(
-  // Test / testOptions   += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
-  Test / jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
-)
+  //testOptions  in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
+  Test / jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv())
