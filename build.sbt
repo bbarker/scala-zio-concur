@@ -30,22 +30,13 @@ inThisBuild(List(
   )
 )))
 
-val scalajsdom = "2.0.0"
 val cats       = "2.6.1"
+val scalajsdom = "2.0.0"
+// val scalatags  = "0.8.2"
 val zio = "2.0.0-M4"
 val zioPrelude = "1.0.0-RC7+11-3a2eb33a-SNAPSHOT"
 
 publish / skip := true
-
-lazy val `monadic-html` = project
-  .enablePlugins(ScalaJSPlugin)
-  .dependsOn(
-    `monadic-rxJS`,
-    `monadic-rx-catsJS` % "test->compile")
-  .settings(
-    testSettings,
-    libraryDependencies += "org.scala-js"  %%% "scalajs-dom" % scalajsdom,
-    /*libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % Test*/)
 
 lazy val `monadic-rxJS`  = `monadic-rx`.js
 lazy val `monadic-rxJVM` = `monadic-rx`.jvm
@@ -53,20 +44,15 @@ lazy val `monadic-rx`    = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Full)
   .jvmSettings(publish / skip := true)
   .jsSettings(testSettings)
-  .settings(
-        libraryDependencies += "dev.zio" %%% "zio" % zio,
-    libraryDependencies += "dev.zio" %%% "zio-prelude" % zioPrelude,
-    /*libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % Test*/)
+  .settings(libraryDependencies ++= Seq(
+    "io.github.ciaraobrien" %% "dottytags" % "1.1.0",
+    // "com.lihaoyi" %%% "scalatags" % "0.8.2", // Doesn't work on Dotty, using DottyTags
+     /* "org.scalatest" %%% "scalatest" % scalatest % Test*/
+    "dev.zio" %%% "zio" % zio,
+    "dev.zio" %%% "zio-prelude" % zioPrelude,
+    )
+  )
 
-lazy val `monadic-rx-catsJS`  = `monadic-rx-cats`.js
-lazy val `monadic-rx-catsJVM` = `monadic-rx-cats`.jvm
-lazy val `monadic-rx-cats`    = crossProject(JSPlatform, JVMPlatform)
-  .crossType(CrossType.Pure)
-  .jvmSettings(publish / skip := true)
-  .dependsOn(`monadic-rx`)
-  .settings(
-    testSettings,
-    libraryDependencies += "org.typelevel" %%% "cats-core" % cats)
 
 /* // examples disabled for now as scalacss isn't supported, can probably remove it
 lazy val `examples` = project
