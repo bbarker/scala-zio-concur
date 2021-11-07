@@ -1,4 +1,4 @@
-package mhtml
+package concur
 
 import dottytags.*
 import dottytags.predefs.all.*
@@ -27,14 +27,3 @@ object concur:
   type Widget[R, E, A] = ZIO[R, E, A] // TODO
   val x: Int = 5
 
-
-
-// Here we experiment with creating a non-ZIO scalatags implementation of
-// widgets becoming other widgets
-object Main:
-
-  def buttonEx(): Tag = button(
-      onclick := ""
-
-  )
-  def textEx(txt: String): Tag = p(txt)

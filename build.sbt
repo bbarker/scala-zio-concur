@@ -12,11 +12,9 @@ inThisBuild(List(
     "-encoding", "UTF-8",
     "-feature",
     "-unchecked",
-    // "-Xfatal-warnings", see Cancelable#cancel
-    "-Xlint:-unused,_",
-    "-language:higherKinds",
-    "-Ywarn-numeric-widen",
-    "-Ywarn-value-discard"),
+    "-Xfatal-warnings",
+    // "-Ywarn-value-discard" // Not in scala 3, but is it the default?
+    ),
   organization := "in.nvilla",
   scalaJSLinkerConfig ~= { _.withSourceMap(true) },
   licenses := Seq(("MIT", url("http://opensource.org/licenses/MIT"))),
@@ -31,8 +29,8 @@ inThisBuild(List(
 )))
 
 val cats       = "2.6.1"
+val dottytags  = "1.1.0"
 val scalajsdom = "2.0.0"
-// val scalatags  = "0.8.2"
 val zio = "2.0.0-M4"
 val zioPrelude = "1.0.0-RC7+11-3a2eb33a-SNAPSHOT"
 
@@ -45,11 +43,28 @@ lazy val `monadic-rx`    = crossProject(JSPlatform, JVMPlatform)
   .jvmSettings(publish / skip := true)
   .jsSettings(testSettings)
   .settings(libraryDependencies ++= Seq(
-    "io.github.ciaraobrien" %% "dottytags" % "1.1.0",
+    "io.github.ciaraobrien" %%% "dottytags" % dottytags,
     // "com.lihaoyi" %%% "scalatags" % "0.8.2", // Doesn't work on Dotty, using DottyTags
      /* "org.scalatest" %%% "scalatest" % scalatest % Test*/
     "dev.zio" %%% "zio" % zio,
     "dev.zio" %%% "zio-prelude" % zioPrelude,
+    )
+  )
+
+lazy val `dottytags-backend` = project
+  .enablePlugins(ScalaJSPlugin)
+  .dependsOn(
+    `monadic-rxJS`,
+    // `monadic-rx-catsJS` % "test->compile"
+    )
+  .settings(
+    testSettings,
+    libraryDependencies ++= Seq(
+      "dev.zio" %%% "zio" % zio,
+      "dev.zio" %%% "zio-prelude" % zioPrelude,
+      "io.github.ciaraobrien" %%% "dottytags" % dottytags,
+      "org.scala-js"  %%% "scalajs-dom" % scalajsdom,
+      // "org.scalatest" %%% "scalatest" % scalatest % Test
     )
   )
 
