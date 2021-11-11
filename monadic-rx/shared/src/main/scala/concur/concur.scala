@@ -35,8 +35,7 @@ https://stackoverflow.com/questions/843680/how-to-replace-dom-element-in-place-u
 
 Concur typically uses something like React under the hood for event handling, but hopefully we
 can avoid the need and just use some built-in logic and a tags library.
-*/
+ */
 object concur:
   type Widget[R, E, A] = ZIO[R, E, A] // TODO
   val x: Int = 5
-

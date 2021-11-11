@@ -13,7 +13,7 @@ inThisBuild(List(
     "-feature",
     "-unchecked",
     "-Xfatal-warnings",
-    // "-Ywarn-value-discard" // Not in scala 3, but is it the default?
+    // "-Ywarn-value-discard" // Not yet in scala 3, see https://scalacenter.github.io/scalafix/docs/rules/RemoveUnused.html
     ),
   organization := "in.nvilla",
   scalaJSLinkerConfig ~= { _.withSourceMap(true) },

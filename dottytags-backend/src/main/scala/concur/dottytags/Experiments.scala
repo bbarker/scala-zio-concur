@@ -16,28 +16,25 @@ object Experiments:
   @JSExport
   val testPage: Tag = html(
     head(
-      script(src:="..."),
+      script(src := "..."),
       script(
-        "alert('Hello World')"
-      )
+        "alert('Hello World')",
+      ),
     ),
     body(
       div(
-        h1(id:="title", "This is a title"),
-        p("This is a big paragraph of text")
-      )
-    )
+        h1(id := "title", "This is a title"),
+        p("This is a big paragraph of text"),
+      ),
+    ),
   )
-    
+
   def main(): Unit = {
-      println("hello world")
+    println("hello world")
   }
 
   def buttonEx(): Tag = button(
-      onclick := ""
-
+    onclick := "",
   )
 
   def textEx(txt: String): Tag = p(txt)
-
-
