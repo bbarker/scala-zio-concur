@@ -15,4 +15,4 @@ in
       export JAVA_HOME=${pkgs.jdk11.out}
     '';
   }
-  
+

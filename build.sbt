@@ -13,7 +13,9 @@ inThisBuild(List(
     "-feature",
     "-unchecked",
     "-Xfatal-warnings",
-    // "-Ywarn-value-discard" // Not yet in scala 3, see https://scalacenter.github.io/scalafix/docs/rules/RemoveUnused.html
+    // "-Ywarn-value-discard" // Not yet in scala 3, see
+    //       https://scalacenter.github.io/scalafix/docs/rules/RemoveUnused.html
+    //       https://github.com/lampepfl/dotty/issues/12785
     ),
   organization := "in.nvilla",
   scalaJSLinkerConfig ~= { _.withSourceMap(true) },
