@@ -1,5 +1,6 @@
 package concur.dottytags
 
+import concur.dottytags.mount
 import dottytags.*
 import dottytags.predefs.all.*
 import dottytags.syntax.given
@@ -14,24 +15,16 @@ import org.scalajs.dom
 object Experiments:
 
   @JSExport
-  val testPage: Tag = html(
-    head(
-      script(src := "..."),
-      script(
-        "alert('Hello World')",
-      ),
-    ),
-    body(
+  val testDiv: Tag = html(
       div(
         h1(id := "title", "This is a title"),
         p("This is a big paragraph of text"),
       ),
-    ),
   )
 
-  def main(): Unit = {
-    println("hello world")
-  }
+  @JSExport
+  def main(): Unit =
+    mount(dom.document.body, testDiv)
 
   def buttonEx(): Tag = button(
     onclick := "",

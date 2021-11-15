@@ -14,13 +14,15 @@ import org.scalajs.dom.DocumentFragment
 
 object mount:
 
+  // TODO: restructure and likely move this
   def parseHTML(htmlString: String): DocumentFragment =
     val template = global.document.createElement("template")
     template.innerHTML = htmlString
     template.content.asInstanceOf[DocumentFragment]
 
 
-  
+  def apply(parent: Node, child: Tag): Unit = mountNode(parent, child, None)
+
   // We try to simplify the approach in monadic-html by avoiding recursive mounting
   // This will be one by directly writing the tag's html into the DOM, including a
   // <script> tag where applicable. However, these event handlers, and possibly other
